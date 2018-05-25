@@ -1,0 +1,25 @@
+{
+  "name": "vaino-be",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "watch": "nodemon index.js",
+    "test": "jest --verbose",
+    "debug": "node --inspect index.js",
+    "lint": "eslint ."
+  },
+  "author": "Ville Haapavaara",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^2.0.1",
+    "cors": "^2.8.4",
+    "express": "^4.16.3"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "jest": "^23.0.0",
+    "nodemon": "^1.17.5"
+  }
+}
