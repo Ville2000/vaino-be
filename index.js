@@ -4,7 +4,10 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const middleware = require('./utils/middleware')
 const usersRouter = require('./controllers/users')
+const mongoose = require('mongoose')
+const url = 'mongodb://vaino-db:89Alligaattori@ds125388.mlab.com:25388/vaino'
 
+mongoose.connect(url)
 
 app.use(cors())
 
