@@ -1,7 +1,10 @@
 const mongoose = require('mongoose')
 
 const User = mongoose.model('User', {
-  username: String,
+  username: {
+    type: String,
+    unique: true
+  },
   passwordHash: String,
   createdAt: { type: Date, default: Date.now }
 })
