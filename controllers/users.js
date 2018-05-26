@@ -11,14 +11,14 @@ usersRouter.post('/', async (req, res) => {
     res.status(400).json({ error: 'Username already in use.' })
 
   const saltRounds = 10
-  const passwordHash = await bcrypt.hash(body.password, saltRounds);
+  const passwordHash = await bcrypt.hash(body.password, saltRounds)
   
   const user = new User({
     username: body.username,
     passwordHash
   })
 
-  const savedUser = await user.save();
+  const savedUser = await user.save()
   res.json(savedUser)
 })
 
