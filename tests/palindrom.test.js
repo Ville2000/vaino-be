@@ -1,3 +1,4 @@
+// An example Jest-test
 const palindrom = require('../utils/for_testing').palindrom
 
 test('palindrom of a', () => {

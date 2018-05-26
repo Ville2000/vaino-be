@@ -13,5 +13,4 @@
 
 # Environment variables
 
-* There's a 'dotenv' named package that can be used to store environment
-variables
+* Use .env file in project root to configure the required environment variables

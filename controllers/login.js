@@ -14,6 +14,7 @@ loginRouter.post('/', async (req, res) => {
   if (!(user && passwordMatch))
     return res.status(400).json({ error: 'Invalid username or password' })
 
+  // Expiress in three hours
   const token = jwt.sign({
     username: user.username,
     id: user._id,
