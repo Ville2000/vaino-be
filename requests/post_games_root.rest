@@ -1,0 +1,5 @@
+POST http://localhost:3001/api/games
+content-type: application/json
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlZpbGxlMjAwMCIsImlkIjoiNWIwOTU2Y2ZjYTdjMTAwOWU3MmVlODI1IiwiZXhwaXJlc3MiOiIyMDE4LTA1LTI2VDE1OjQ1OjE0LjExNVoiLCJpYXQiOjE1MjczMzg3MTR9.53h53TQmUA4DH2X_Zy_HpiQr29SPwvl3Wp7HMQpCS18
+
+{}

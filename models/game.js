@@ -3,6 +3,10 @@ const mongoose = require('mongoose')
 const Game = mongoose.model('Game', {
   beginTime: Date,
   endTime: Date,
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   players: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
