@@ -2,6 +2,9 @@ const usersRouter = require('express').Router()
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
 
+/** User registration endpoint
+ *  TODO Validation
+ */
 usersRouter.post('/', async (req, res) => {
   const body = req.body
 
