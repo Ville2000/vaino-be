@@ -23,3 +23,4 @@
   * This will start a heroku dyno that runs the application
 * Navigate to application's url with 'heroku open'
 * View logs with 'heroku logs --tail'
+* ATTENTION! Environment variables used in development are not directly available in production version of the application. To add environment variables to heroku use 'heroku config:set <variable>'
