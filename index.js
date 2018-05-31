@@ -8,7 +8,7 @@ const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const gamesRouter = require('./controllers/games')
 const mongoose = require('mongoose')
-const url = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}`
+const url = process.env.MONGODB_URI
 
 mongoose.connect(url)
 
