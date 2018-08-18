@@ -7,6 +7,7 @@ const middleware = require('./utils/middleware')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const gamesRouter = require('./controllers/games')
+const aboutRouter = require('./controllers/about')
 const mongoose = require('mongoose')
 const url = process.env.MONGODB_URI
 
@@ -21,6 +22,7 @@ app.use(express.static('build'))
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/games', gamesRouter)
+app.use('/api/about', aboutRouter)
 
 app.use(middleware.error)
 
