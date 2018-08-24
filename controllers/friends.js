@@ -37,7 +37,7 @@ friendsRouter.post('/', async (req, res) => {
   const friend = await User.findOne({ username: friendUsername })
 
   if (!friend)
-    return res.status(404).json({ error: 'Friend not found' })
+    return res.status(404).json({ error: 'Kaveria ei löytynyt' })
 
   const friendToAdd = {
     _id: friend._id,
@@ -45,7 +45,7 @@ friendsRouter.post('/', async (req, res) => {
   }
 
   if (user.friends && user.friends.length > 0 && user.friends.some(f => f._id == friend._id))
-    return res.status(400).json({ error: 'Friend already in list' })
+    return res.status(400).json({ error: 'Kaveri on jo listallasi' })
 
   user.friends = user.friends.concat({
     _id: friend._id,
@@ -76,7 +76,6 @@ friendsRouter.delete('/:id', async (req, res) => {
 
   await user.save()
 
-  console.log('friends', user.friends)
 
   return res.status(200).json(user.friends)
 })
