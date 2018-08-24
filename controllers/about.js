@@ -8,6 +8,11 @@ aboutRouter.get('/', async (req, res) => {
       content: 'Väinö on korttipeli!'
     },
     {
+      title: 'Pelin tavoite',
+      imgSrc: '',
+      content: 'Voittaa peli'
+    },
+    {
       title: 'Pelin aloittaminen',
       imgSrc: '',
       content: 'Jaa kortit'

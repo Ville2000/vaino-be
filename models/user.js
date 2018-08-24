@@ -8,8 +8,12 @@ const User = mongoose.model('User', {
   passwordHash: String,
   createdAt: { type: Date, default: Date.now },
   friends: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    _id: {
+      type: String
+    },
+    username: {
+      type: String
+    }
   }],
   games: [{
     type: mongoose.Schema.Types.ObjectId,

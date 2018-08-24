@@ -8,6 +8,7 @@ const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const gamesRouter = require('./controllers/games')
 const aboutRouter = require('./controllers/about')
+const friendsRouter = require('./controllers/friends')
 const mongoose = require('mongoose')
 const url = process.env.MONGODB_URI
 
@@ -23,6 +24,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/games', gamesRouter)
 app.use('/api/about', aboutRouter)
+app.use('/api/friends', friendsRouter)
 
 app.use(middleware.error)
 
