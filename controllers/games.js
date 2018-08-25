@@ -15,9 +15,19 @@ gamesRouter.post('/', async (req, res) => {
   const game = new Game({
     beginTime: new Date(),
     endTime: null,
-    createdBy: user._id,
-    players: [user._id],
+    createdBy: {
+      _id: user._id,
+      username: user.username
+    },
+    players: [],
   })
+
+  game.players = game.players.concat(
+    {
+      _id: user._id,
+      invAccepted: true
+    }
+  )
 
   const savedGame = await game.save()
 
@@ -34,22 +44,22 @@ gamesRouter.put('/:id/addPlayer', async (req, res) => {
   const decodedToken = await getDecodedToken(req)
 
   if (!(decodedToken || decodedToken.id))
-    res.send(401).json({ error: 'Authorization token missing or invalid.' })
+    res.status(401).json({ error: 'Authorization token missing or invalid.' })
 
   const game = await Game.findById(gameId)
 
   if (!game)
-    res.send(404).json({ error: 'Game not found' })
+    res.status(404).json({ error: 'Game not found' })
 
   const isCreator = game.createdBy == decodedToken.id
 
   if (!isCreator)
-    res.send(401).json({ error: 'Not authorized' })
+    res.status(401).json({ error: 'Not authorized' })
 
   const playerToAdd = await User.findOne({ username: playerUsername })
 
   if (!playerToAdd)
-    res.send(404).json({ error: 'Player not found' })
+    res.status(404).json({ error: 'Player not found' })
 
   if (!game.players)
     game.players = []
@@ -71,25 +81,45 @@ gamesRouter.put('/:id/addPlayer', async (req, res) => {
   res.send(200)
 })
 
-/** Get game by id */
-gamesRouter.get('/:id', async (req, res) => {
+// TODO:
+/** Poll games that have invitation pending */
+gamesRouter.get('/invitedTo', async (req, res) => {
   const decodedToken = await getDecodedToken(req)
 
   if (!(decodedToken || decodedToken.id))
     res.send(401).json({ error: 'Authorization token missing or invalid.' })
 
+  const games = await Game.find({
+    players: {
+      _id: decodedToken.id,
+      invAccepted: false
+    }
+  })
+
+  if (!games || games.length < 0) return res.status(404)
+
+  return res.status(200).json(games)
+})
+
+/** Get game by id */
+gamesRouter.get('/:id', async (req, res) => {
+  const decodedToken = await getDecodedToken(req)
+
+  if (!(decodedToken || decodedToken.id))
+    return res.status(401).json({ error: 'Authorization token missing or invalid.' })
+
   const gameId = req.params.id
   const game = await Game.findById(gameId)
 
   if (!game)
-    res.send(404).json({ error: 'Game not found' })
+    return res.status(404).json({ error: 'Game not found' })
 
-  const includesPlayer = game.players.some(player => player == decodedToken.id)
+  const includesPlayer = game.players.some(player => player._id == decodedToken.id)
 
   if (!includesPlayer)
-    res.send(401).json({ error: 'Not authorized.' })
+    return res.status(401).json({ error: 'Not authorized.' })
 
-  res.status(200).json(game)
+  return res.status(200).json(game)
 })
 
 // TODO: Not tested
@@ -98,51 +128,55 @@ gamesRouter.put('/:id/accept', async (req, res) => {
   const decodedToken = await getDecodedToken(req)
 
   if (!(decodedToken || decodedToken.id))
-    res.send(401).json({ error: 'Authorization token missing or invalid.' })
+    return res.status(401).json({ error: 'Authorization token missing or invalid.' })
 
   const gameId = req.params.id
   const game = await Game.findById(gameId)
 
   if (!game)
-    res.send(404).json({ error: 'Game not found' })
+    return res.status(404).json({ error: 'Game not found' })
 
   const player = game.players.find(player => player._id == decodedToken.id)
 
   if (!player)
-    res.send(404).json({ error: 'Player not found' })
+    return res.status(404).json({ error: 'Player not found' })
 
-  player.accepted = true
+  player.invAccepted = true
 
   const user = await User.findById(decodedToken.id)
 
   if (!user)
-    res.send(404).json({ error: 'User not found'})
+    return res.status(404).json({ error: 'User not found'})
 
   if (!user.games)
     user.games = []
 
-  user.games.concat(game._id)
+  user.games = user.games.concat({
+    _id: game._id
+  })
 
   await user.save()
 
   await game.save()
 
-  res.status(200)
+  console.log('Alles ist gut')
+
+  return res.sendStatus(200)
 })
 
 // TODO: Not tested
-/** Refuse invitation */
-gamesRouter.put('/:id/refuse', async (req, res) => {
+/** Deny invitation */
+gamesRouter.put('/:id/deny', async (req, res) => {
   const decodedToken = await getDecodedToken(req)
 
   if (!(decodedToken || decodedToken.id))
-    res.send(401).json({ error: 'Authorization token missing or invalid.' })
+    return res.status(401).json({ error: 'Authorization token missing or invalid.' })
 
   const gameId = req.params.id
   const game = await Game.findById(gameId)
 
   if (!game)
-    res.send(404).json({ error: 'Game not found' })
+    return res.status(404).json({ error: 'Game not found' })
 
   const filteredPlayers = game.players.filter(player => player._id != decodedToken.id)
 
@@ -150,31 +184,7 @@ gamesRouter.put('/:id/refuse', async (req, res) => {
 
   await game.save()
 
-  res.status(200)
-})
-
-// TODO:
-/** Add points to round */
-gamesRouter.post('/:id/points', async (req, res) => {
-  const decodedToken = await getDecodedToken(req)
-
-  if (!(decodedToken || decodedToken.id))
-    res.send(401).json({ error: 'Authorization token missing or invalid.' })
-
-  const gameId = req.params.id
-  const game = await Game.findById(gameId)
-
-  if (!game)
-    res.send(404).json({ error: 'Game not found' })
-
-  const player = game.players.find(player => player._id == decodedToken.id)
-  
-})
-
-// TODO:
-/** Update points of round */
-gamesRouter.put('/:id/points', async (req, res) => {
-  
+  return res.sendStatus(200)
 })
 
 // TODO: Not tested
@@ -216,6 +226,30 @@ gamesRouter.put('/:id/refuse', async (req, res) => {
   }
 
   res.status(200)
+})
+
+// TODO:
+/** Add points to round */
+gamesRouter.post('/:id/points', async (req, res) => {
+  const decodedToken = await getDecodedToken(req)
+
+  if (!(decodedToken || decodedToken.id))
+    res.send(401).json({ error: 'Authorization token missing or invalid.' })
+
+  const gameId = req.params.id
+  const game = await Game.findById(gameId)
+
+  if (!game)
+    res.send(404).json({ error: 'Game not found' })
+
+  const player = game.players.find(player => player._id == decodedToken.id)
+  
+})
+
+// TODO:
+/** Update points of round */
+gamesRouter.put('/:id/points', async (req, res) => {
+  
 })
 
 // TODO:

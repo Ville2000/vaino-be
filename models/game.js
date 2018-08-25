@@ -4,13 +4,19 @@ const Game = mongoose.model('Game', {
   beginTime: Date,
   endTime: Date,
   createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    _id: { type: String },
+    username: { type: String }
   },
-  players: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
+  players: [
+    {
+      _id: {
+        type: String
+      },
+      invAccepted: {
+        type: Boolean
+      }
+    }
+  ],
   rounds: [
     {
       round_type: {

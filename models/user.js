@@ -16,8 +16,7 @@ const User = mongoose.model('User', {
     }
   }],
   games: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Game'
+    _id: String
   }]
 })
 
