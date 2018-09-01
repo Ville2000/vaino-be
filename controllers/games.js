@@ -229,31 +229,46 @@ gamesRouter.put('/:id/leave', async (req, res) => {
   }
 })
 
-// TODO:
 /** Add points to round */
-gamesRouter.post('/:id/points', async (req, res) => {
+gamesRouter.post('/:id/points/:round', async (req, res) => {
   const decodedToken = await getDecodedToken(req)
 
   if (!(decodedToken || decodedToken.id))
-    res.send(401).json({ error: 'Authorization token missing or invalid.' })
+    res.status(401).json({ error: 'Authorization token missing or invalid.' })
 
   const gameId = req.params.id
   const game = await Game.findById(gameId)
 
   if (!game)
-    res.send(404).json({ error: 'Game not found' })
+    res.status(404).json({ error: 'Game not found' })
 
   const player = game.players.find(player => player._id == decodedToken.id)
+
+  if (!player)
+    res.status(404).json({ error: 'Pelaajaa ei löydy pelistä' })
   
-  // TODO: 
-})
+  const round = req.params.round
+  const points = req.body.points
 
-// TODO:
-/** Update points of round */
-gamesRouter.put('/:id/points', async (req, res) => {
-  // TODO: 
-})
+  if (!round || !points || round < 1 || round > 7)
+    res.status(400).json({ error: 'Virhe kierroksessa tai pisteissä' })
 
+  const score = game.scores.find(score => (score.player == decodedToken.id && score.round == round))
+
+  if (score) {
+    score.points = points
+  } else {
+    game.scores = game.scores.concat({
+      player: player._id,
+      round,
+      points
+    })
+  }
+
+  await game.save()
+
+  res.sendStatus(200)
+})
 
 /** List games */
 gamesRouter.get('/', async (req, res) => {
@@ -277,5 +292,9 @@ gamesRouter.get('/', async (req, res) => {
 
   return res.status(200).json(games)
 })
+
+// TODO: Points by round
+
+// TODO: Start game
 
 module.exports = gamesRouter

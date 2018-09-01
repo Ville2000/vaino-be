@@ -24,19 +24,21 @@ const Game = mongoose.model('Game', {
       }
     }
   ],
-  rounds: [
+  currentRound: {
+    type: Number,
+    default: 1
+  },
+  scores: [
     {
-      round_type: {
-        type: String,
-        enum: ['2x3', 'S&3', '2xS', '3x3', '2x3&S', '2xS&3', '3xS']
+      player: {
+        type: String
       },
-      scores: [{
-        player: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User'
-        },
-        score: Number
-      }]
+      round: {
+        type: Number
+      },
+      points: {
+        type: Number
+      }
     }
   ]
 })
