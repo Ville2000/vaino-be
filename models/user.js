@@ -15,9 +15,7 @@ const User = mongoose.model('User', {
       type: String
     }
   }],
-  games: [{
-    _id: String
-  }]
+  games: [String]
 })
 
 module.exports = User

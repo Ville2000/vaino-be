@@ -25,6 +25,7 @@ gamesRouter.post('/', async (req, res) => {
   game.players = game.players.concat(
     {
       _id: user._id,
+      username: user.username,
       invAccepted: true
     }
   )
@@ -44,44 +45,40 @@ gamesRouter.put('/:id/addPlayer', async (req, res) => {
   const decodedToken = await getDecodedToken(req)
 
   if (!(decodedToken || decodedToken.id))
-    res.status(401).json({ error: 'Authorization token missing or invalid.' })
+    return res.status(401).json({ error: 'Tunnistus epäonnistui. Kirjaudu sisään uudestaan' })
 
   const game = await Game.findById(gameId)
-
+  
   if (!game)
-    res.status(404).json({ error: 'Game not found' })
+    return res.status(404).json({ error: 'Peliä ei löytynyt tällä id:llä' })
 
-  const isCreator = game.createdBy == decodedToken.id
+  const isCreator = game.createdBy._id == decodedToken.id
 
   if (!isCreator)
-    res.status(401).json({ error: 'Not authorized' })
+    return res.status(401).json({ error: 'Sinulla ei ole oikeutta lisätä pelaajaa' })
 
   const playerToAdd = await User.findOne({ username: playerUsername })
 
   if (!playerToAdd)
-    res.status(404).json({ error: 'Player not found' })
+    return res.status(404).json({ error: 'Player not found' })
 
   if (!game.players)
     game.players = []
 
+  if (game.players.find(player => player.username === playerToAdd.username))
+    return res.status(400).json({ error: 'Pelaaja on jo pelissä' })
+
   game.players = game.players.concat({
     _id: playerToAdd._id,
-    username: playerToAdd.username
+    username: playerToAdd.username,
+    invAccepted: false
   })
 
   await game.save()
 
-  if (!playerToAdd.games)
-    playerToAdd.games = []
-
-  playerToAdd.games = playerToAdd.games.concat(game._id)
-
-  await playerToAdd.save()
-
-  res.send(200)
+  return res.status(200).json(game)
 })
 
-// TODO:
 /** Poll games that have invitation pending */
 gamesRouter.get('/invitedTo', async (req, res) => {
   const decodedToken = await getDecodedToken(req)
@@ -89,14 +86,18 @@ gamesRouter.get('/invitedTo', async (req, res) => {
   if (!(decodedToken || decodedToken.id))
     res.send(401).json({ error: 'Authorization token missing or invalid.' })
 
+  const user = await User.findOne({ _id: decodedToken.id })
+  
+  if (!user)
+    res.status(404).json({ error: 'Tunnistautuminen epäonnistui. Kirjaudu uudelleen sisään' })
+
   const games = await Game.find({
     players: {
-      _id: decodedToken.id,
+      _id: user._id,
+      username: user.username,
       invAccepted: false
     }
   })
-
-  if (!games || games.length < 0) return res.status(404)
 
   return res.status(200).json(games)
 })
@@ -151,9 +152,7 @@ gamesRouter.put('/:id/accept', async (req, res) => {
   if (!user.games)
     user.games = []
 
-  user.games = user.games.concat({
-    _id: game._id
-  })
+  user.games = user.games.concat(game._id)
 
   await user.save()
 
@@ -189,19 +188,19 @@ gamesRouter.put('/:id/deny', async (req, res) => {
 
 // TODO: Not tested
 /** Leave/end (leave if not creator, end if creator) game */
-gamesRouter.put('/:id/refuse', async (req, res) => {
+gamesRouter.put('/:id/leave', async (req, res) => {
   const decodedToken = await getDecodedToken(req)
 
   if (!(decodedToken || decodedToken.id))
-    res.send(401).json({ error: 'Authorization token missing or invalid.' })
+    return res.status(401).json({ error: 'Authorization token missing or invalid.' })
 
   const gameId = req.params.id
   const game = await Game.findById(gameId)
 
   if (!game)
-    res.send(404).json({ error: 'Game not found' })
+    return res.status(404).json({ error: 'Game not found' })
 
-  const isCreator = game.createdBy == decodedToken.id
+  const isCreator = game.createdBy._id == decodedToken.id
 
   if (isCreator) {
     const players = game.players
@@ -212,7 +211,9 @@ gamesRouter.put('/:id/refuse', async (req, res) => {
       user.save()
     }
 
-    await Game.deleteOne({ _id: game._id })
+    await Game.findByIdAndRemove({ _id: game._id })
+
+    return res.sendStatus(200)
   } else {
     const user = await User.findById(decodedToken.id)
     user.games = user.games.filter(gameId => gameId != game._id)
@@ -223,9 +224,9 @@ gamesRouter.put('/:id/refuse', async (req, res) => {
     game.players = filteredPlayers
 
     await game.save()
-  }
 
-  res.status(200)
+    return res.sendStatus(200)
+  }
 })
 
 // TODO:
@@ -244,15 +245,37 @@ gamesRouter.post('/:id/points', async (req, res) => {
 
   const player = game.players.find(player => player._id == decodedToken.id)
   
+  // TODO: 
 })
 
 // TODO:
 /** Update points of round */
 gamesRouter.put('/:id/points', async (req, res) => {
-  
+  // TODO: 
 })
 
-// TODO:
+
 /** List games */
+gamesRouter.get('/', async (req, res) => {
+  const decodedToken = await getDecodedToken(req)
+
+  if (!(decodedToken || decodedToken.id))
+    return res.status(401).json({ error: 'Authorization token missing or invalid.' })
+
+  const user = await User.findOne({ _id: decodedToken.id })
+
+  if (!user)
+    return res.status(404).json({ error: 'Virhe tunnistautumisessa. Kirjaudu sisään uudelleen' })
+
+  const games = await Game.find({
+    players: {
+      _id: user._id,
+      username: user.username,
+      invAccepted: true
+    }
+  }).sort({ beginTime: 1})
+
+  return res.status(200).json(games)
+})
 
 module.exports = gamesRouter

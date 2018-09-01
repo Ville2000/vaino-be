@@ -7,6 +7,10 @@ const Game = mongoose.model('Game', {
     _id: { type: String },
     username: { type: String }
   },
+  started: {
+    type: Boolean,
+    default: false
+  },
   players: [
     {
       _id: {
@@ -14,6 +18,9 @@ const Game = mongoose.model('Game', {
       },
       invAccepted: {
         type: Boolean
+      },
+      username: {
+        type: String
       }
     }
   ],
