@@ -158,8 +158,6 @@ gamesRouter.put('/:id/accept', async (req, res) => {
 
   await game.save()
 
-  console.log('Alles ist gut')
-
   return res.sendStatus(200)
 })
 
@@ -288,13 +286,36 @@ gamesRouter.get('/', async (req, res) => {
       username: user.username,
       invAccepted: true
     }
-  }).sort({ beginTime: 1})
+  })
 
-  return res.status(200).json(games)
+  return res.status(200).json(games.sort((a, b) => a.beginTime > b.beginTime ? -1 : 1))
 })
 
 // TODO: Points by round
 
-// TODO: Start game
+gamesRouter.get('/:id/start', async (req, res) => {
+  const decodedToken = await getDecodedToken(req)
+
+  if (!(decodedToken || decodedToken.id))
+    return res.status(401).json({ error: 'Authorization token missing or invalid.' })
+
+  const user = await User.findOne({ _id: decodedToken.id })
+
+  if (!user)
+    return res.status(404).json({ error: 'Virhe tunnistautumisessa. Kirjaudu sisään uudelleen' })
+
+  const gameId = req.params.id
+
+  const game = await Game.findById(gameId)
+
+  if (!game)
+    return res.status(404).json({ error: 'Game not found' })
+
+  game.started = true
+
+  await game.save()
+
+  return res.sendStatus(200)
+})
 
 module.exports = gamesRouter
